@@ -8,6 +8,12 @@ Scripts, datasets and related resources to study the Data Science Specialization
 1. R Programming
   * Week 2
   * Week 3
+  * Week 4
+      - course notes
+      - assignment
 2. Getting and Cleaning data
   * Week 1
   * Week 2
+  * week 3
+      - course notes
+      - assignment
