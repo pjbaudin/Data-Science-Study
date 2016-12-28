@@ -52,3 +52,68 @@ library(dplyr)
 # log2(), log10()
 # exp()
 
+# Reshaping data
+# 
+# The goal is tidy data:
+# 1- Each variable forms a column
+# 2- Each observation forms a row
+# 3- Each table/file stores data about one kind of observation
+
+library(reshape2)
+head(mtcars)
+
+# Melting data frames
+mtcars$carname <- rownames(mtcars)
+carMelt <- melt(mtcars,
+                id = c("carname", "gear", "cyl"),
+                measure.vars = c("mpg", "hp"))
+head(carMelt, n = 3)
+tail(carMelt, n = 3)
+
+# Casting data frames
+cylData <- dcast(carMelt, cyl ~ variable)
+cylData
+
+cylData <- dcast(carMelt, cyl ~ variable, mean)
+cylData
+
+# Averaging values
+head(InsectSprays)
+
+tapply(InsectSprays$count, InsectSprays$spray, sum)
+
+# Another way - split
+spIns = split(InsectSprays$count, InsectSprays$spray)
+spIns
+
+sprCount = lapply(spIns, sum)
+sprCount
+
+unlist(sprCount)
+
+sapply(spIns, sum)
+
+# Another way - dplyr package
+library(plyr)
+ddply(InsectSprays, .(spray), summarize, sum = sum(count))
+
+spraySums <- ddply(InsectSprays, .(spray), summarize,
+                   sum = ave(count, FUN = sum))
+dim(spraySums)
+head(spraySums)
+
+# other links and info
+# http://www.slideshare.net/jeffreybreen/reshaping-data-in-r
+# 
+# see also functions:
+#     - acast() for castingas multi-dimensional arrays
+#     - arrang() for faster reordering without using order()
+#     - mutate() for adding new variables
+
+# Manage data frames with dplyr - introduction
+# arrange()
+# filter()
+# select()
+# mutate()
+# rename()
+# summarize()/summarise()
