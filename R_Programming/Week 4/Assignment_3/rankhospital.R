@@ -1,20 +1,17 @@
-# Set working directory
-# setwd("D:/Data Science/R-Data-Science-Study/R_Programming/Week 4/Assignment_3")
+# Rank hospitals by outcome in a state
 
-best <- function(state, outcome) {
+rankhospital <- function(state, outcome, num = "best") {
       # Invalid outcome check
       # Assume that input is lower case
       if (!outcome %in% c("heart attack", "heart failure", "pneumonia")) {
-            stop("invalid outcome")
-      }
+            stop("invalid outcome")}
       
       # Read dataset
       dataset <- read.csv("outcome-of-care-measures.csv", colClasses="character")
       
       #Invalid state check
       if (sum(dataset[, 7] == state) == 0) {
-            stop("invalid state")
-      }
+            stop("invalid state")}
       
       # Assign index for the outcome input
       # After checking the Flatfiles:
@@ -29,16 +26,19 @@ best <- function(state, outcome) {
       
       # Coerce the dataset for processing 
       # Suppressing warnings and remove NA's.
-      dataset[,ind] <- suppressWarnings(as.numeric(dataset[,ind]))
+      dataset[, ind] <- suppressWarnings(as.numeric(dataset[, ind]))
       dataset <- na.omit(dataset)
       
       # Return hospital name in that state
       # with lowest 30-day death rate
       # Subset by state and sort by outcome value and then hospital name.
-      hosp <- subset(dataset, State==state)
+      hosp <- subset(dataset, State == state)
       hosp <- hosp[order(hosp[, ind], hosp[, 2], na.last = TRUE), ]
       hosp <- na.omit(hosp)
       
-      #Output hospital name with the lowest 30-day mortality rate.
-      hosp[1, 2]
+      # Assign value to num as per input
+      num <- ifelse(num == "best", 1, ifelse(num == "worst", nrow(hosp), as.numeric(num)))
+      
+      #Output hospital name with the 30-day mortality rate for a given outcome, state and rank.
+      hosp[num, 2]
 }
