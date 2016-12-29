@@ -117,3 +117,98 @@ head(spraySums)
 # mutate()
 # rename()
 # summarize()/summarise()
+
+setwd("D:/Data Science/R-Data-Science-Study/Getting_Cleaning_Data/Week 3")
+
+library(dplyr)
+
+chicago <- readRDS("chicago.rds")
+dim(chicago)
+
+str(chicago)
+
+glimpse(chicago)
+
+names(chicago)
+
+head(select(chicago, city:dptp))
+
+head(select(chicago, -(city:dptp)))
+
+chic.f <- filter(chicago, pm25tmean2 > 30)
+head(chic.f, 10)
+
+chic.f <- filter(chicago, pm25tmean2 > 30 & tmpd > 80)
+head(chic.f)
+
+chicago <- arrange(chicago, date)
+head(chicago)
+tail(chicago)
+
+chicago <- arrange(chicago, desc(date))
+head(chicago)
+tail(chicago)
+
+chicago <- rename(chicago, pm25 = pm25tmean2, dewpoint = dptp)
+head(chicago)
+
+chicago <- mutate(chicago, pm25detrend = pm25 - mean(pm25, na.rm = TRUE))
+head(select(chicago, pm25, pm25detrend))
+
+chicago <- mutate(chicago,
+                  tempcat = factor(1 * (tmpd > 80),
+                                   labels = c("cold", "hot")))
+
+hotcold <- group_by(chicago, tempcat)
+hotcold
+
+summarize(hotcold, pm25 = mean(pm25), o3 = max(o3tmean2), no2 = median(no2tmean2))
+
+summarize(hotcold, pm25 = mean(pm25, na.rm = TRUE), o3 = max(o3tmean2), no2 = median(no2tmean2))
+
+chicago <- mutate(chicago, year = as.POSIXlt(date)$year + 1900)
+years <- group_by(chicago, year)
+
+summarize(years, pm25 = mean(pm25, na.rm = TRUE),
+          o3 = max(o3tmean2),
+          no2 = median(no2tmean2))
+
+chicago %>%
+      mutate(month = as.POSIXlt(date)$mon + 1) %>%
+      group_by(month) %>%
+      summarize(pm25 = mean(pm25, na.rm = TRUE),
+                o3 = max(o3tmean2),
+                no2 = median(no2tmean2))
+
+# Merging data
+
+reviews <- read.csv("reviews.csv")
+solutions <- read.csv("solutions.csv")
+head(reviews, 2)
+head(solutions, 2)
+
+names(reviews)
+names(solutions)
+
+mergedData <- merge(reviews, solutions,
+                    by.x = "solution_id",
+                    by.y = "id",
+                    all = TRUE)
+head(mergedData)
+
+intersect(names(solutions), names(reviews))
+
+mergedData2 <- merge(reviews, solutions, all = TRUE)
+head(mergedData2)
+
+df1 <- data.fram(id = sample(1:10), x = rnom(10))
+df2 <- data.fram(id = sample(1:10), y = rnom(10))
+arrange(join(df1, df2), id)
+
+df1 <- data.fram(id = sample(1:10), x = rnom(10))
+df2 <- data.fram(id = sample(1:10), y = rnom(10))
+df3 <- data.fram(id = sample(1:10), z = rnom(10))
+
+dfList <- list(df1, df2, df3)
+join_all(dfList)
+
