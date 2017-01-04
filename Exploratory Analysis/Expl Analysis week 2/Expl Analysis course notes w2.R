@@ -74,3 +74,19 @@ xyplot(y ~ x | f, panel = function(x, y, ...){
 ## 4- Panel functions can be specified/customized to modify
 ## what is plotted in each of the plot panels
 
+
+## ggplot
+# see http://ggplot2.org
+# 
+# Theory of graphic
+# shorten the distance from the mind to the page
+# 
+# Grammar of graphic
+# "in brief, the grammar tells us that a statistical graphic is a mapping from data to aesthetic attributes (colour, shape, size) of geometric objects (points, lines, bars). The plot may also contain statistical transformations of the data and is drawn on a specific coordinate system"
+# from ggplot2 book
+# 
+# qplot() stands for quick plot
+# 
+# ggplot() is the core function and very flexible for doing things qplot cannot do.
+# 
+# 
