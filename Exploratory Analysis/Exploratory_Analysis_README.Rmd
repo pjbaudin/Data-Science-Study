@@ -1,0 +1,12 @@
+---
+title: "Exploratory_Analysis_README"
+author: "Pierre Baudin"
+date: "December 28, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## to be completed when time
