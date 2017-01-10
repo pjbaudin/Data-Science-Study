@@ -61,3 +61,41 @@ Typical aesthetics:
 Form follows function
 Align scales
 Categorical variables: avoid redondancy
+
+### Plots
+
+#### Scatter Plots
+- Points, jitter, abline
+- Each geom has specific aesthetics mapping
+- ggplot2 can also calculate statistics
+- geom_jitter helps to highlight region of high density
+- Optimize shape, col and transparency of the plots
+
+#### Bar Plots
+- Histogram, bar, errorbar
+- Histogram plot a statistical function, slightly different binning algorithm
+- summary table calculated in the background
+- Bar plot, two types: absolute counts or distribution
+
+#### Line plots - Time series
+- geom_line()
+- can use line type, size and color
+- area fill with geom_area() and can adjust the position.
+- geom_ribbon() to show uncertainty
+
+### qplot()
+- Easier, quicker and dirtier
+- qplot() takes advantage of the grammar of graphics
+
+## Summary
+
+1- Grammatical Elements
+
+- data, aesthetics, geometry
+
+2- Aesthetics Elements
+
+- scales = encoding elements
+- tidy dataset for different output and variables
+- Continuous or categorical variables
+- colors, shape, transparency
