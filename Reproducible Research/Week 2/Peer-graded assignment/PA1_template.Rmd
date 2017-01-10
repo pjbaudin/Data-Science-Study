@@ -1,0 +1,136 @@
+---
+title: "PA1_template"
+author: "Pierre Baudin"
+date: "January 10, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Reproducible Research - Week 2
+
+This report is part of the assignment of the Reproducible Research course, part of the specialization for Data Science on Coursera. The course is proposed by the University John Hopkins.
+
+## Objective and Instructions
+
+### Introduction
+
+It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
+
+This assignment makes use of data from a personal activity monitoring device.
+
+### Dataset for the assignment
+
+This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+The data for this assignment can be downloaded from the course web site:
+
+[Dataset](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)
+
+It will come in a zip format. After unzip, the dataset is available in .csv format.
+
+The variables included in this dataset are:
+
+- **steps**: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+- **date**: The date on which the measurement was taken in YYYY-MM-DD format
+- **interval**: Identifier for the 5-minute interval in which measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+### Outlook of the report
+
+1. Data loading, exploratory work and preprocessing
+2. Computation 1 - Mean total number of steps per day
+3. Computation 2 - Average daily activity pattern
+4. Data processing, dealing with missing values
+5. Analysis of the difference between weekdays and weekends
+
+## Data loading, exploratory work and preprocessing
+
+*For convenience, the dataset has alsready been downloaded and unzip. You can refer to the R_script DL_data.R for more information.*
+
+*The report also assume that the dataset is available in your current working directory. Use setwd() function to set the appropriate directory.*
+
+The following code loads the data and output a brief summary of the dataset.
+
+```{r}
+df <- read.csv("activity.csv")
+head(df)
+tail(df)
+```
+We can see that there are a lot of missing data. The summary() function helps to see the scale of it. 
+```{r}
+summary(df)
+```
+The summary function also help to see that the date variable has an incorrect format.
+
+```{r}
+sapply(df, class)
+```
+Let's transform the variable in the correct class:
+
+```{r correctclass, message=FALSE, warning=FALSE}
+library(lubridate)
+df$date <- ymd(df$date)
+df$steps <- as.numeric(df$steps)
+df$interval <- as.numeric(df$interval)
+sapply(df, class)
+summary(df)
+```
+
+At this point, the dataset is ready for further analysis.
+
+## Computation 1 - Mean total number of steps per day
+
+For this part of the assignment, we ignore the missing values in the dataset.
+
+The following code loads the package necessary for the analysis.
+The code also group the cleaned dataset by dates and then sum up the number of steps for each days.
+
+```{r Computation1, message=FALSE, warning=FALSE}
+library(dplyr)    # to manipulate data
+library(magrittr) # for the pipe operator
+library(ggplot2)  # plotting using the grammar of graphic
+
+df_comp <- df %>% 
+      group_by(date) %>%
+      summarise(sum(steps))
+```
+
+The following graph enables the visualization of the total steps done per day over the period of time available in the dataset.
+
+```{r stepsumhist, message=FALSE, warning=FALSE}
+ggplot(df_comp, aes(x = date, y = `sum(steps)`)) +
+             geom_histogram(stat = "identity") +
+             labs(x ="Date", y = "Total number of steps") +
+             theme(axis.text.x = element_text(angle = -90, hjust = 0))
+```
+
+The calculation of the mean and median of the total number of steps taken per day are as follow:
+
+```{r}
+summary(df_comp)
+```
+
+
+## What is the average daily activity pattern?
+
+    Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+    Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+## Inputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+    Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+    Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+    Create a new dataset that is equal to the original dataset but with the missing data filled in.
+    Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+    Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+    Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
