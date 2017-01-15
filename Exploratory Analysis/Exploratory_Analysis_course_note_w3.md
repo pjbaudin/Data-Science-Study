@@ -110,5 +110,45 @@ Where the columns of U are orthogonal (left singular vectors), the columns of V 
 
 The principal components are equal to the right singular values if you first scale (subtract the mean, divide but the standard deviation) the variables.
 
+**See R_script practice**
+
+**Notes and further resources**
+- scale matters
+- PC's/SV's may mix real patterns
+- Can be computationally intensive
+- Advanced data analysis from an elementary point of view
+- Elements of statistical learning
+- Alternatives:
+    - Factor Analysis
+    - Independent component analysis
+    - Latent semantic analysis
 
 ## Working with Colors
+
+see heat.colors() and topo.colors() but these are not particularly clear
+
+Use the grDevices package:
+- colorRamp
+    - take a palette of colors and return a function taht takes values between 0 and 1, indicating the extremes of the color palette
+- colorRampPalette
+    - Take a palette of colors and return a function that takes integer arguments and returns a vector of colors interpolating the palette  
+
+Can also use the colors() function.
+
+There are three types of palettes:
+- Sequential
+- Diverging
+- Qualitative
+
+See the RColorBrewer package
+- brewer.pal()
+
+Use in conjunction with colorRampPalette
+
+Can also use the smoothScatter function
+
+**Other plotting notes**
+
+- The rgb function can be used to produce any color via red, green, blue proportions
+- Color transparency can be added via the alpha parameter to rgb
+- the colorspace package can be used for a different control over colors
