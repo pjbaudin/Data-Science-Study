@@ -1,0 +1,19 @@
+## EDA Case Study - Fine Particulate Matter Air Pollution in the United States
+
+Example of exploratory analysis
+
+### Asking the question
+
+Have basic idea in mind of what we are looking for.
+
+Question:
+- Are air pollution lower now than before?
+- Are the level of air pollution lower on average now than before?
+
+Data from 1999 to 2012
+
+To get the AQS code:
+[https://aqs.epa.gov/aqsweb/documents/codetables/parameters.html](https://aqs.epa.gov/aqsweb/documents/codetables/parameters.html)
+
+To get the data:
+see the EP new website / Dataset from the course video is not available
