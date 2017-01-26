@@ -1,0 +1,62 @@
+Questions to answer:
+
+1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
+
+
+
+# Analysis of severe weather events and their economic consequences across the United States
+
+## Synopsis
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+
+This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+
+### Data processing
+
+#### Preparation
+```{r}
+# Load packages
+library(magrittr) # Pipe operator
+library(dplyr) # Data manipulation
+library(ggplot2) # plotting system using the grammar of graphics
+
+# URL to download
+fileURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+
+# Local data filename
+dataFileZIP <- "./StormDataset.csv.bz2"
+
+# Directory for the dataset
+dirFile <- "./StormDataset"
+
+# If not exist, download the dataset.zip,
+if (file.exists(dataFileZIP) == FALSE) {
+      download.file(fileURL, destfile = dataFileZIP)
+}
+
+# Uncompress data file
+if (file.exists(dirFile) == FALSE) {
+      unzip(dataFileZIP)
+}
+
+
+```
+
+
+Describes how the code is loaded into R and processed for analysis
+
+### Results
+
+Presentation of the results
+Includes at least one plot and no more than three figures
+
+Review of the evaluation and findings
+
+### Session Information
+```{r}
+sessionInfo()
+```
+
