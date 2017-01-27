@@ -88,3 +88,8 @@ NOTE: If you are having trouble connecting with RPubs due to proxy-related or ot
 In order to submit this assignment, you must copy the RPubs URL for your completed data analysis document in to the peer assessment question.
 
 If you choose to submit as a PDF, please insert an obvious placeholder URL (e.g. https://google.com) in order to allow submission.
+
+
+## Good pick
+
+http://rpubs.com/CyRiLM/244360
