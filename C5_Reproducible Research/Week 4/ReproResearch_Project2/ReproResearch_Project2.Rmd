@@ -1,0 +1,255 @@
+---
+title: "ReproducibleResearch_Project2"
+author: "Pierre Baudin"
+date: "January 27, 2017"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+---
+
+# Analysis of severe weather events and their economic consequences across the United States
+
+----------
+
+## Synopsis
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+
+This project involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+--------
+
+## Data Processing
+
+### Preparation
+```{r, message=FALSE, warning=FALSE}
+# Load packages
+library(magrittr) # Pipe operator
+library(dplyr) # Data manipulation
+library(ggplot2) # plotting system using the grammar of graphics
+library(tidyr)
+
+# URL to download
+fileURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+
+# Local data filename
+dataFileZIP <- "./StormDataset.csv.bz2"
+
+# Directory for the dataset
+dirFile <- "./StormDataset"
+
+# If not exist, download the dataset.zip,
+if (file.exists(dataFileZIP) == FALSE) {
+      download.file(fileURL, destfile = dataFileZIP)
+}
+
+# Note: .csv.bz2 can be read directly with read.csv function
+StormDataset <- read.csv("StormDataset.csv.bz2")
+
+# Structure of the dataset imported
+glimpse(StormDataset)
+
+```
+
+### Manipulation
+
+The data set import contains 902297 observations and 37 attributes. TO answer the question for this project, we limit our focus to the following variables:
+
+- *EVTYPE*: The type of storm event (i.e. Blizzard, Dense Fog, Flood, Heat, ..)
+- *FATALITIES*: The number of fatalities as a result of the storm event (direct or indirect)
+- *INJURIES*: The number of injuries as a result of the storm event (direct or indirect)
+- *PROPDMG*: The total property damage rounded to three significant digits used in conjunction with PROPDMGEXP to determine the appropriate size multiplier.
+- *PROPDMGEXP*: A letter code indicating the magnitude of the PROPDMG dollar amount {“K”,“M”,“B”} for “thousands”, “millions” and “billions” respectively.
+- *CROPDMG*: The total crop damage rounded to three significant digits used in conjunction with CROPDMGEXP to determine the the appropriate size multiplier.
+- *CROPDMGEXP*: A letter code indicating the magnitude of the CROPDMG dollar amount {“K”,“M”,“B”} for “thousands”, “millions” and “billions” respectively.
+
+```{r, message=FALSE, warning=FALSE}
+# Selection of the relevant variables
+
+DataSelection <- StormDataset %>%
+      select(EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)
+
+# Structure of the dataset
+glimpse(DataSelection)
+
+```
+
+#### Event Types
+
+We can rapidly see that there are a few issues that needs to be addressed to have a clean dataset for the analysis. 
+It looks like observations are full of typo issues and inconsistent entry.
+For this project, we are going to assign event types to a main event categories. This enables the reduction of the number of event types.
+
+```{r, message=FALSE, warning=FALSE}
+# First cleaning on the event type
+#####################################
+
+# Upper case all event observations
+DataSelection$EVTYPE <- as.factor(toupper(DataSelection$EVTYPE))
+
+# Trim function to remove white spaces at the start and end of the event type
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+# Applying trim function
+DataSelection$EVTYPE <- as.factor(trim(DataSelection$EVTYPE))
+
+# Classification of the main event categories
+DataSelection[grepl("HAIL", DataSelection$EVTYPE), "EVTYPE"] <- "HAIL"
+DataSelection[grepl("HEAVY RAIN", DataSelection$EVTYPE), "EVTYPE"] <- "HEAVY RAIN"
+DataSelection[grepl("HEAVY SNOW", DataSelection$EVTYPE), "EVTYPE"] <- "HEAVY SNOW"
+DataSelection[grepl("HIGH WIND", DataSelection$EVTYPE), "EVTYPE"] <- "HIGH WIND"
+DataSelection[grepl("HURRICANE", DataSelection$EVTYPE), "EVTYPE"] <- "HURRICANE"
+DataSelection[grepl("THUNDERSTORM", DataSelection$EVTYPE), "EVTYPE"] <- "THUNDERSTORM"
+DataSelection[grepl("TSTM", DataSelection$EVTYPE), "EVTYPE"] <- "THUNDERSTORM"
+DataSelection[grepl("TROPICAL STORM", DataSelection$EVTYPE), "EVTYPE"] <- "TROPICAL STORM"
+DataSelection[grepl("URBAN", DataSelection$EVTYPE), "EVTYPE"] <- "URBAN FLOOD"
+DataSelection[grepl("WATERSPOUT", DataSelection$EVTYPE), "EVTYPE"] <- "WATERSPOUT"
+DataSelection[grepl("WINTER STORM", DataSelection$EVTYPE), "EVTYPE"] <- "WINTER STORM"
+DataSelection[grepl("SUMMARY", DataSelection$EVTYPE), "EVTYPE"] <- NA
+DataSelection[grepl("LIGHTNING", DataSelection$EVTYPE), "EVTYPE"] <- "LIGHTNING"
+DataSelection[grepl("LIGHTING", DataSelection$EVTYPE), "EVTYPE"] <- "LIGHTNING"
+DataSelection[grepl("FLOOD", DataSelection$EVTYPE), "EVTYPE"] <- "FLOOD"
+DataSelection[grepl("HEAT", DataSelection$EVTYPE), "EVTYPE"] <- "HEAT"
+
+# Unused levels are removed from the dataset
+DataSelection$EVTYPE <- droplevels(DataSelection$EVTYPE)
+```
+
+#### Value manipulation
+
+The following code reassign coding expression to a numeric value for the computation of the total damage value for each events. Values have been deducted from the dataset documentation.
+The manipulation affects the following variables:
+determine the appropriate size multiplier.
+- *PROPDMGEXP*: A letter code indicating the magnitude of the PROPDMG dollar amount {“K”,“M”,“B”} for “thousands”, “millions” and “billions” respectively.
+- *CROPDMGEXP*: A letter code indicating the magnitude of the CROPDMG dollar amount {“K”,“M”,“B”} for “thousands”, “millions” and “billions” respectively.
+
+```{r, message=FALSE, warning=FALSE}
+# Second clearing of the EXP value
+####################################
+# Assigning values for the property exponent data
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "K"] <- 1000
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "M"] <- 1e+06
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == ""] <- 1
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "B"] <- 1e+09
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "m"] <- 1e+06
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "0"] <- 1
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "5"] <- 1e+05
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "6"] <- 1e+06
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "4"] <- 10000
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "2"] <- 100
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "3"] <- 1000
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "h"] <- 100
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "7"] <- 1e+07
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "H"] <- 100
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "1"] <- 10
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "8"] <- 1e+08
+# Assigning '0' to invalid exponent data
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "+"] <- 0
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "-"] <- 0
+DataSelection$PROPEXP[DataSelection$PROPDMGEXP == "?"] <- 0
+
+DataSelection$PROPEXP <- as.numeric(DataSelection$PROPEXP)
+
+# Assigning values for the crop exponent data 
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "M"] <- 1e+06
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "K"] <- 1000
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "m"] <- 1e+06
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "B"] <- 1e+09
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "0"] <- 1
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "k"] <- 1000
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "2"] <- 100
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == ""] <- 1
+# Assigning '0' to invalid exponent data
+DataSelection$CROPEXP[DataSelection$CROPDMGEXP == "?"] <- 0
+
+DataSelection$CROPEXP <- as.numeric(DataSelection$CROPEXP)
+```
+
+#### Final selection
+
+The final steps removes the NA values in the dataset and compute the following operation on the dataset:
+- calculate the total damage value for crop and properties damages
+- group by event types
+- remove zero values events
+
+```{r, message=FALSE, warning=FALSE}
+DataSelection <- na.omit(DataSelection)
+
+# Final computation to get:
+###################################
+
+DataSelection <- DataSelection %>%
+      mutate(PROPVAL = PROPDMG * PROPEXP) %>%
+      mutate(CROPVAL = CROPDMG * CROPEXP) %>%
+      select(EVTYPE, FATALITIES, INJURIES, PROPVAL, CROPVAL) %>%
+      group_by(EVTYPE) %>%
+      summarise_all(sum) %>%
+      filter(FATALITIES > 0 & INJURIES > 0  & PROPVAL > 0 & CROPVAL > 0)
+
+summary(DataSelection)
+```
+
+----------
+
+## Results
+
+### Events and harm to population
+
+Across the United States, which types of events are most harmful with respect to population health?
+
+To answer this question, we will utilize the top 10 events with the most fatalies and injuries.
+
+```{r, message=FALSE, warning=FALSE}
+# Preparing dataset for plotting
+# Note: for the ordering of the data, we place fatalities first
+(USeventPOP <- DataSelection %>%
+      select(EVTYPE, FATALITIES, INJURIES) %>%
+      gather(key = POPHEALTH, value = NUMBERPEOPLE, FATALITIES, INJURIES) %>%
+      arrange(desc(NUMBERPEOPLE)) %>%
+      head(n = 10))
+
+# Plot the dataset
+ggplot(USeventPOP, aes(x = reorder(EVTYPE, -NUMBERPEOPLE), y = NUMBERPEOPLE, fill = POPHEALTH)) +
+      geom_bar(stat = "identity", position = "stack") +
+      labs(x = "Event Type", y = "Number of People") +
+      ggtitle("Most Harmful Events across the U.S. with respect to Population Health") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+The graph clearly shows that tornados are by far the most harmful event across the United States, both in number of fatalities and injuries. Following tornado events, heat-related events, thunderstorms and flood are the most harmful events.
+
+### Events and Economic consequences
+
+Across the United States, which types of events have the greatest economic consequences?
+
+```{r, message=FALSE, warning=FALSE}
+# Preparing dataset for plotting
+# Note: for the ordering of the data, we place fatalities first
+(USeventDAMG <- DataSelection %>%
+      select(EVTYPE, PROPVAL, CROPVAL) %>%
+      gather(key = VALUETYPE, value = TOTALVALUE, PROPVAL, CROPVAL) %>%
+      arrange(desc(TOTALVALUE)) %>%
+      head(n = 10))
+
+# Plotting the graph
+ggplot(USeventDAMG, aes(x = reorder(EVTYPE, -TOTALVALUE), y = TOTALVALUE, fill = VALUETYPE)) +
+      geom_bar(stat = "identity", position = "stack") +
+      labs(x = "Event Type", y = "Damaged Economic Value") +
+      ggtitle("Most Harmful Events across the U.S. with respect to Economic Value") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+Flood represents the main harmful economic events across the United States. Water damages can be severe to properties in particular.
+
+We can notice that the majority of the economic damages are related to properties for the top 10 type of events with the maximum damage value.
+
+-------
+
+### Session Information
+```{r}
+sessionInfo()
+```
+
