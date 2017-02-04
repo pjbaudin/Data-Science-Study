@@ -203,3 +203,15 @@ By reporting a p-value the reader can perform the hypothesis test at whatever al
 If the p-value is less than alpha you reject the null hypothesis
 
 For two sided hypothesis test, double the smaller or the two one sided hypothesis test p-values
+
+
+## Notes from swirl practice
+
+Z statistic **Z=(X'-mu)/(sigma/sqrt(n))** which follows a standard normal distribution.
+
+t statistic which looks a lot like the Z. It's defined as t=(X'-mu)/(s/sqrt(n)). Like the Z statistic, the t is centered around 0. The only difference between the two is that the population std deviation, sigma, in Z is replaced by the sample standard deviation in the t. So the distribution of the t statistic is independent of the population mean and variance. Instead it depends on the sample size n.
+
+
+A Type I error REJECTS a TRUE null hypothesis H_0 and a Type II error ACCEPTS a FALSE null hypothesis H_0.
+
+The general rule for rejection is if sqrt(n) * ( X' - mu) / s > Z_{1-alpha}.
