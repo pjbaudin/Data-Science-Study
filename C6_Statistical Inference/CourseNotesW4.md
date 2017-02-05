@@ -41,3 +41,70 @@ sqrt(n)*(mua - mu0) / sigma
 
 Consider calculating power for a Gossett's T test four our example using power.t.test()
 - Omit one of the arguments and it solves for it
+
+
+## Multiple Comparisons
+
+### Key ideas
+
+- Hypothesis testing/significance analysis is commonly overused
+- Correcting for multiple testing avoids false positives or discoveries
+- Two key components
+      - Error measure
+      - Correction
+
+### Error rates
+
+- FAlse positive rate: the rate at which false results (beta = 0) are called significant E[V / m0]
+- Family wise error rate (FWER): the probabiltiy of at least one false positive Pr(V>= 1)
+- False discovery rate (FDR): the rate at which claims of significance are false E[V/R]
+      - The false positive rate is closely related to the type I error rate
+
+https://en.wikipedia.org/wiki/False_positive_rate
+
+### Controlling the false positive rate
+
+If p-values are correctly calculated calling P < alpha significant will control the false positive rate at level alpha on average.
+
+### Controlling family-wise error rate (FWER)
+The Bonferroni correction is the oldest multiple testing correction.
+
+Basic idea:
+- suppose you do m tests
+- you want to control FWER at level alpha so Pr(V >= 1) < alpha
+- calculate p-values normally
+- set alpha_fwer = alpha / m
+- call all p-values less than alpha_fwer significant
+
+PROs: Easy to calculate, conservative
+
+CONs: May be very conservative
+
+### Controlling false discovery rate (FDR)
+
+This is the most popular correction when performing lots of tests say in genomics, imaging, astronomy, or other signal-processing disciplines
+
+Basic idea:
+- suppose you do m tests
+- you want to control FDR at level alpha so E[V/R]
+- calculate p-values normally
+- order the p-values from smallest to largest
+- call any P(i) <= alpha * i / m significant
+
+PROs: Still pretty easy to calculate, less conservative (maybe much less)
+
+CONs: Allows for more false positives, may behave strangely under dependence
+
+### Adjusted p-values
+
+- One approach is to adjust the threshold alpha
+- A different approach is to calculate "adjusted p-values"
+- They are not p-values anymore
+- But they can be used directly without adjusting alpha
+
+### Notes and resources
+
+- Multiple testing is an entire subfield
+- A basic Bonferroni/BH correction is usually enough
+- If there is strong dependencies between tests there may be problems
+      - consider method = "BY"
