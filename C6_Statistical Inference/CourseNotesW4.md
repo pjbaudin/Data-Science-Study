@@ -108,3 +108,86 @@ CONs: Allows for more false positives, may behave strangely under dependence
 - A basic Bonferroni/BH correction is usually enough
 - If there is strong dependencies between tests there may be problems
       - consider method = "BY"
+
+## Resampling
+
+Resampling based procedures are ways to perform population based statistical inferences, while living within our data. Data Scientists tend to really like resampling based inferences, since they are very data centric procedures, they scale well to large studies and they often make very few assumptions.
+
+### Bootstraping
+
+The bootstrap is a tremendously useful tool for constructing confidence intervals and calculating standard errors for difficult statistics.
+
+For example, how would you derive a confidence interval for the median?
+
+Resample from the sample
+
+#### The bootstrap principle
+
+Suppose that I have a statistic that estimates some population parameter, but I don't know its sampling distribution
+
+The bootstrap principle suggests using the distribution defined by the data to approximate its sampling distribution
+
+#### The bootstrap in practice
+
+In practice, the bootstrap principle is always carried out using simulation
+
+The general procedure follows by first simulating complete data sets from the observed data with replacement
+
+- This is approximately drawing from the sampling distribution of that statistic, at least as far as the data is able to approximate the true population distribution
+
+Calculate the statistic for each simulated data set
+
+Use the simulated statistics to either define a confidence interval or take the standard deviation to calculate a standard error
+
+#### Nonparametric boostrap algorithm example
+
+Bootstrap procedure for calculating confidence interval for the median from a data set of n observations
+
+1. Sample n observations **with replacement** from the observed data resulting in one simulated complete data set
+2. Take teh median of the simulated data set
+3. Repeat these two steps B times, resulting in B simulated medians
+4. These medians are approximately drawn from the sampling distribution of the median of n observations, therefore we can:
+      - draw a histogram of them
+      - Calculate their standard deviation to estimate the standard error of the median
+      - Take the 2.5th and 97.5th percentiles as confidence interval for the median
+
+#### Notes on the bootstrap
+
+- The bootstrap is non-parametric
+- Better percentile bootstrap confidence intervals correct for bias
+- There are lots of variations ono bootstrap procedure
+
+See book: "An introduction to the Bootstrap" by Efron and Tibshirani
+
+### Permutation tests
+
+Group comparisons
+
+Consider comparing two independent groups
+
+Permutation tests
+
+- Consider the null hypothesis that the distribution of the observations from each group is the same
+- Then the group labels are irrelevant
+- Consider a data fram with count and spray
+- Permute the spray (group) labels
+- Recalculate the statistic
+      - Mean difference in counts
+      - Geometric means
+      - T statistic
+- Calculate the percentage of simulations where the simulated statistic was more extreme (toward the alternative) than the observed
+
+#### Variations on permutation testing
+
+| Data type | Statistic | Test name |
+| --- | --- | --- |
+| Ranks | rank sum | rank sum test |
+| Binary | hypergeometric prob | Fisher's exact test |
+| Raw data |  |ordinary permutation test |
+
+- Also, so-called randomization tests are exactly permutation tests, with a different motivation.
+- For matched data, one can randomize the signs
+      - For ranks, this results in the signed rank test
+- Permutation strategies work for regression as well
+      - Permuting a regressor of interest
+- Permutation tests work very well in multivariate settings
