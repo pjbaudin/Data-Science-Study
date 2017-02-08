@@ -1,0 +1,110 @@
+---
+title: "Statistical Inference - Basic Inferential Data Analysis Project - Part 2"
+author: "Pierre Baudin"
+date: "February 8, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Basic Inferential Data Analysis Instructions
+
+In this project, we're going to analyze the ToothGrowth data in the R datasets package.
+
+## Load the ToothGrowth data and perform some basic exploratory data analyses
+
+**Note:** The dataset contains 60 observations and three variables where the response is the tooth length in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice (OJ) or ascorbic acid (VC)).
+
+```{r, message=FALSE, warning=FALSE}
+# load packages
+library(dplyr)
+library(datasets)
+library(ggplot2)
+
+# Import dataset
+toothdf <- ToothGrowth
+
+# For easier handling, convert the dose into factor
+toothdf$dose <- as.factor(toothdf$dose)
+
+# Add ID to each observation (10 observation for each dose)
+toothdf[,"ID"] <- rep(1:10,6)
+
+# Basic exploratory data analysis (class and observations)
+glimpse(toothdf)
+
+# Basic graph to understand the data
+ggplot(toothdf, aes(x = supp, y = len, fill = dose)) +
+      geom_boxplot()
+```
+
+
+## Basic summary of the data.
+
+```{r}
+summary(toothdf)
+```
+
+## Confidence intervals and t-test
+
+### Comparison of tooth growth by supp
+
+```{r}
+# two-sided t.test for len vs supp
+# here we assume that the variables are paired
+t.test(toothdf$len ~ toothdf$supp, alternative = "two.sided", 
+       paired = TRUE, var.equal = FALSE, conf.level = 0.95)
+```
+
+The entire confidence interval is above zero which means that OJ has more effect on Tooth Growth for the rats as compared to VC.
+
+Below is a visualization of the data used in this t-test:
+```{r}
+# Plot of the observation
+ggplot(toothdf, aes(x = supp, y = len, group=factor(ID))) +
+      geom_line(aes(color=ID)) +
+      geom_point(size = 15, pch = 19, fill = "steelblue", alpha = 0.2)
+
+```
+
+### Comparison of tooth growth by dose
+
+```{r}
+# two-sided t.test for dose 1 and 0.5
+# we assume that the variables are paired
+t.test(x = toothdf[toothdf$dose == "1", ]$len,
+       y = toothdf[toothdf$dose == "0.5", ]$len, paired = TRUE, var.equal = FALSE, conf.level = 0.95)
+
+# two-sided t.test for dose 2 and 1
+# we assume that the variables are paired
+t.test(x = toothdf[toothdf$dose == "2", ]$len,
+       y = toothdf[toothdf$dose == "1", ]$len, paired = TRUE, var.equal = FALSE, conf.level = 0.95)
+
+# two-sided t.test for dose 2 and 0.5
+# we assume that the variables are paired
+t.test(x = toothdf[toothdf$dose == "2", ]$len,
+       y = toothdf[toothdf$dose == "0.5", ]$len, paired = TRUE, var.equal = FALSE, conf.level = 0.95)
+```
+
+The three t-tests have been performed for each set of dosage (0.5, 1 and 2). We can see that all the resulting confidence intervals are above zero.
+This mean that an increase in dosage result in higher tooth growth in the rat.
+
+Below is a visualization of the data used in this t-tests:
+```{r}
+# Plot of the observation
+ggplot(toothdf, aes(x = dose, y = len, group=factor(ID))) +
+      geom_line(aes(color=ID)) +
+      geom_point(size = 15, pch = 19, fill = "steelblue", alpha = 0.2)
+
+```
+
+
+## Conclusions and assumptions
+
+In conclusion, the analysis shows that the orange juice is more effective for the teeth growth in the rat. In addition, we presented an analysis showing that the higher the dosage, no matter the supplement, the higher the growth rate. We assume that the values are paired for the t-test.
+
+

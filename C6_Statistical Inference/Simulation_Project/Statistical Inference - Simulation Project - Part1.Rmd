@@ -2,7 +2,9 @@
 title: "Statistical Inference - Simulation Project - Part 1"
 author: "Pierre Baudin"
 date: "February 7, 2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +23,12 @@ Illustrate via simulation and associated explanatory text the properties of the 
 
 ### Simulation
 
+The code in the following section performs a simulation to generate a 1000*40 matrix containing 1000 simulations (draw) of 40 exponential distributions observations (sampling size).
+
+The sample mean of the sample distribution is calculated by applying the mean function to  each row and then to the resulting vector of means.
+
+Theoretically both mean and variance have value 1/lambda.
+
 ```{r}
 # set.seed for reproducibility
 set.seed(122333)
@@ -36,21 +44,55 @@ Nsim <- 1000
 SimSample <- matrix(rexp(n * Nsim, rate = lambda), nrow = Nsim, ncol = n)
 
 # Computation of the Sample Mean of the distribution
-SimSampleMean <- mean(apply(SimSample, 1, mean))
+SimSampleMeanVec <- apply(SimSample, 1, mean)
+SimSampleMean <- mean(SimSampleMeanVec)
 
 # Theoritical Mean of the distribution
 mu <- 1 / lambda
 
 ```
 
-### Sample Mean versus Theoritical mean
+### Sample Mean versus Theoritical mean result
 
 ```{r}
 data.frame(Theoritical = mu, Simulation = SimSampleMean)
 ```
 
+We can see that the theoritical mean and the sample mean are very close to each other. To observe a better result, increasing the sample size and/or the number of draw can help.
 
-2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
-3. Show that the distribution is approximately normal.
+## Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
 
-In point 3, focus on the difference between the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials.
+### Computation
+```{r}
+# Theoritical variance
+sigma2 <- (1 / lambda^2) / n
+
+# Computation of the variance of the Simulation set
+SimSigma <- var(SimSampleMeanVec)
+```
+
+### Sample variance versu theoritical variance
+
+```{r}
+# Result
+data.frame(Theoritical = sigma2, Simulation = SimSigma)
+```
+
+The comparison of the theoritical variance and the variance calculated from the simulation data set is shown above. We can see that the output values are similar.
+ 
+## Show that the distribution is approximately normal.
+
+```{r}
+library(ggplot2)
+ggplot(data.frame(SimSampleMeanVec), aes(x = SimSampleMeanVec)) + 
+      geom_density(colour = "steelblue", size = 2) + 
+      geom_vline(xintercept = mean(SimSampleMeanVec), size = 1.2, lty = 1, colour = "orange") +
+      geom_vline(xintercept = mu, size = 1.2, colour = "red", lty = 2) +
+      stat_function(fun = dnorm, args = list(mean = mu, sd = sqrt(sigma2)), colour = "green", size = 2) +
+      ggtitle(expression(paste("Distribution of averages of samples drawn from exponential distribution with ", lambda, " = 0.2"))) +
+      xlab(expression(bar(X)))
+```
+
+The plot of the thoritical normal distribution and the calculated sample mean distribution from our simulation are shown in green and blue, respectively.
+The theoritical mean represented by the red dotted line and the calculated sample mean from the simulation represented by the yellow line are overlapping each other.
+Visually, we can consider that the output of the simulation is approximately normal. Once again, by increasing the sample size and/or the number of draw, the simulated sample mean distribution will get closer to the normal distribution.
