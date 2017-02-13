@@ -38,3 +38,9 @@ Cor(X,Y) = Cov(X, Y) / (Sx * Sy)
 Cor(X,Y) measures the strength of the linear relationship between the X and Y data, with stronger relationships as Corr(x, Y) heads towards -1 or 1.
 
 ### Least squares estimation of regression lines
+
+see practice in R script
+
+## Regression to the mean
+
+Regression to the mean, was invented by Francis Galton in the paper “Regression towards mediocrity in hereditary stature” The Journal of the Anthropological Institute of Great Britain and Ireland , Vol. 15, (1886). The idea served as a foundation for the discovery of linear regression.
