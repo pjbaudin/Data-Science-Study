@@ -36,3 +36,59 @@ See R code practice script and how to make a linear model and use the function p
 ## Residuals
 
 Residuals represent variation left unexplained by our model. We emphasize the difference between residuals and errors. The errors unobservable true errors from the known coefficients, while residuals are the observable errors from the estimated coefficients. In a sense, the residuals are estimates of the errors.
+
+Variation around the regression line. Variation left unexplained.
+
+Residuals are very important, especially to explain poor model fits.
+
+Residuals between the observed and predicted outcome:
+
+ei = Yi - Yhati
+
+The vertical distance between the observed data and teh regression line
+
+Least squares minimizes sum(ei^2)
+
+The ei can be thought of as estimates of the epsi
+
+### Properties of the residuals
+
+If an intercept is included in the model sum(ei * Xi) = 0
+sum(ei) = 0
+
+Residuals are useful for investigating poor model fil
+
+Positive residuals are above the regression line, negatives residuals are below.
+
+Residuals can be thought as the outcome (Y) with the linear association of the predictor (X) removed
+
+One differentiates residual variation (variation after removing the predictor) from systematic variation (variation explained by the regression model)
+
+Residual plots highlight poor model fit
+
+Check out R-script for practice
+
+### Estimating residual variation
+
+R squared is the percentage of the total variability that is explained by the linear relationship with the predictor.
+
+R-squared is the percentage of variation explained by the regression model
+
+0 <= R^2 <= 1
+
+R-squared is the sample correlation squared
+
+R-squared can be a misleading summary of model fit
+      - deleting data can inflate R-squred
+      - Adding terms to a regression model always increases R-squared
+
+Do example(anscombe) to see the following data
+      - Basically same mean and variance of X and Y
+      - identical correlations (hence the same R-squared)
+      - Same linear regression relationship
+
+## Inference in regression
+
+Inference is the process of drawing conclusions about a population using a sample. In statistical inference, we must account for the uncertainty in our estimates in a principled way. Hypothesis tests and confidence intervals are among the most common forms of statistical inference.
+
+These statements apply generally, and, of course, to the regression setting that we've been studying.
