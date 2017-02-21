@@ -11,6 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Regression Model - Final Project
 
+### Executive Summary
+
+Fuel efficiency is a common selection criteria when buying a car. In this paper, we use the 1974 Motor Trend data (mtcars) to evaluate factors on fuel efficiency. Focus is directed on the effects of automatic versus manual transmission on the gas mileage.
+
+By looking at several possible models, we observe a relationship between fuel efficiency and transmission type. However, the addition of other variables in the model enables a better fit.
+
+
 ### Data exploration
 
 The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
@@ -85,8 +92,7 @@ summary(mpgam_model_final)
 
 This model has a **Residual standard error of 2.084** on 28 degrees of freedom. The **Adjusted R-squared value is 0.8804**. This means that the model can **explain about 88% of the variance** of the MPG variable. Using this model on this dataset, we have continued to improve the way of predict the fuel consumption of a car.
 
-### Executive Summary
-
+### Conclusion
 Comparing our four models using the anova function:
 
 ```{r}
@@ -97,8 +103,7 @@ We can observe from the Anova analysis that the residual sum of square (RSS) whi
 
 Residual plots and visual diagnostics are displayed in the annex section.
 
-In conclusion, the regression model in this project that best explain the fuel consumption from this dataset includes, on top of the transmission type, the car weight, the 1/4 mile time and the relationship between the weight and the transmission type.
-
+The regression model in this project that best explain the fuel consumption (mpg) from this dataset includes, on top of the transmission type (am), the car weight ()wt, the 1/4 mile time (qsec) and the relationship between the weight and the transmission type.
 
 ### Annexes
 
