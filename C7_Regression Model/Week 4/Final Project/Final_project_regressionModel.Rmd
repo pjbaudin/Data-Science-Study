@@ -1,0 +1,21 @@
+---
+title: "Regression Model - Final Project"
+author: "Pierre Baudin"
+date: "February 21, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Regression Model - Final Project
+
+## Annexes
+
+### Session info
+
+```{r}
+sessionInfo()
+```
+
