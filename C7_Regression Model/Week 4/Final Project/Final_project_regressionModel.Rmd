@@ -11,11 +11,129 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Regression Model - Final Project
 
-## Annexes
+### Data exploration
 
-### Session info
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# Import library
+library(ggplot2)
+
+# Import data set
+data(mtcars)
+
+# Tidy data and reclass to factor
+ind <- c("cyl", "vs", "am", "gear", "carb")
+mtcars[ind] <- lapply(mtcars[ind], as.factor)
+```
+
+Exploratory plots have been placed in the annex section. The preliminary exploration helps to visualize that an automatic transmission yield a lower miles per gallon consumption.
+
+### Model fitting and analysis
+
+#### Linear model - 2 variables
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+mpgam_model <- lm(mpg ~ am, mtcars)
+```
+```{r}
+mpgam_model$coefficients
+mpgam_model$df.residual
+# summary(mpgam_model)
+```
+
+This simple linear model shows that on average, a car consumes **17.147 mpg with automatic transmission**, and **7.245 mpg for a manual transmission**. This model has a **Residual standard error of 4.902** (not displayed) on 30 degrees of freedom. The **Adjusted R-squared value is 0.3385** (not displayed). This means that the model can **explain about 34% of the variance** of the MPG variable.
+
+The Adjusted R-squared value is low and indicates that we need to consider other variables to the model in order to better explain what influence the fuel consumption for this set of data.
+
+#### Adjusting the model
+
+The process for finding a better linear model to explain the change in fuel consumption is as follow:
+1. Create a model that include all the variables available
+2. Using the R step function, determine the best model in our case.
+
+See [https://en.wikipedia.org/wiki/Stepwise_regression](https://en.wikipedia.org/wiki/Stepwise_regression))
+
+```{r, include=FALSE}
+mpgam_model_all <- lm(mpg ~ ., data=mtcars)
+mpgam_model_step <- step(mpgam_model_all, k=log(nrow(mtcars)))
+```
+```{r, include=FALSE}
+summary(mpgam_model_step)
+```
+Summary of the model is included in the annex.
+
+This more complex linear model includes in addition to the transmission type, the variables weight and the 1/4 mile time. The fuel consumption is not explainable anymore by the transmission type only. This model has a **Residual standard error of 2.459** on 28 degrees of freedom. The **Adjusted R-squared value is 0.8336**. This means that the model can **explain about 83% of the variance** of the MPG variable.
+
+Using this model on this dataset, we have a better way of predict the fuel consumption of a car. We can easily understand that the weight of the cars plays a significant role to explain the fuel consumption. The heavier the car, the higher the fuel consumption. As for the 1/4 mile time, I would speculate that as the car get faster for this distance, the fuel consumption goes up.
+
+#### Going further
+
+Can we explain more variance using other variable in the model?
+
+To go further on the influence of the weight and the transmission type on the fuel consumption, the exploratory data is helping us to find another interesting relationship. Refer to the annex for the plot.
+By exploring further on this relationship, we can see that the cars with manual transmission weight less that the automatic transmission cars.
+
+Given this information, we can fit it in our model as follow:
+
+```{r, include=FALSE}
+mpgam_model_final <- lm(mpg ~ wt + qsec + am + wt:am, data=mtcars)
+```
+
+```{r, echo=FALSE}
+summary(mpgam_model_final)
+```
+
+This model has a **Residual standard error of 2.084** on 28 degrees of freedom. The **Adjusted R-squared value is 0.8804**. This means that the model can **explain about 88% of the variance** of the MPG variable. Using this model on this dataset, we have continued to improve the way of predict the fuel consumption of a car.
+
+### Executive Summary
+
+Comparing our four models using the anova function:
 
 ```{r}
+anova(mpgam_model, mpgam_model_all, mpgam_model_step, mpgam_model_final)
+```
+
+We can observe from the Anova analysis that the residual sum of square (RSS) which is a measure of the discrepancy between the data and the estimation model, decreases as we fine-tune the model.
+
+Residual plots and visual diagnostics are displayed in the annex section.
+
+In conclusion, the regression model in this project that best explain the fuel consumption from this dataset includes, on top of the transmission type, the car weight, the 1/4 mile time and the relationship between the weight and the transmission type.
+
+
+### Annexes
+
+#### EXploratory data analysis
+
+##### MPG versus Transmission type:
+
+```{r}
+ggplot(mtcars, aes(x = am, y = mpg)) +
+        geom_boxplot() +
+        xlab("Transmission (0 = Automatic, 1 = Manual)") +
+        ylab("MPG") +
+        ggtitle("Exploratory Analysis - MPG vs. Transmission")
+```
+
+##### Relationship between MPG, weight and transmission type
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg, group = am, color = am)) +
+        geom_point(size = 5, alpha = 0.8) +
+        xlab("Weight") +
+        ylab("MPG") +
+        ggtitle("Scatter Plot of MPG vs. Weight by Transmission")
+```
+
+##### Residual plot and visual diagnostics
+
+```{r}
+par(mfrow = c(2, 2))
+plot(mpgam_model_final)
+```
+
+#### Session info for reproducibility
+
+```{r, include=FALSE}
 sessionInfo()
 ```
 
