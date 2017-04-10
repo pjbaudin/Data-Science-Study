@@ -1,0 +1,270 @@
+---
+title: "Machine Learning - Final Project"
+author: "Pierre Baudin"
+date: "April 10, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Coursera Machine Learning - Final Project
+
+## Introduction
+
+"Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks.
+
+One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.
+
+In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.
+
+More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset)."
+
+Extract from Coursera - Machine Learning Module 4.
+
+The dataset used in this project has been kindly shared by http://groupware.les.inf.puc-rio.br/har
+
+```{r Setup, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Load libraries
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(caret)
+library(randomForest)
+library(rpart)
+library(gbm)
+library(survival)
+library(purrr)
+library(reshape2)
+library(tictoc)
+```
+
+```{r Importdata, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Download training and testing datasets
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv",
+              "pml-training.csv")
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv",
+              "pml-testing.csv")
+
+# Data kindly shared by http://groupware.les.inf.puc-rio.br/har
+
+# Read the dataset
+raw_train <- read.csv("pml-training.csv")
+raw_validation <- read.csv("pml-testing.csv")
+
+```
+
+
+## Data Cleaning
+
+To help with the project, the following steps have been taken to clean the dataset:
+- Remove all the columns with NA
+- Remove all the columns with no values
+
+```{r Cleandata, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Remove columns with observation number
+drops <- c("X")
+
+processed_train <- raw_train[ , !(names(raw_train) %in% drops)]
+processed_validation <- raw_validation[, !(names(raw_validation) %in% drops)]
+
+# Further cleaning to remove NA and empty observations
+ind <- colSums(is.na(processed_train) | processed_train == "")
+
+toremove_cols <- names(ind[ind > 0])
+
+final_train <- processed_train[, !(names(processed_train)
+                                        %in% toremove_cols)]
+
+final_validation <- processed_validation[, !(names(processed_validation)
+                                             %in% toremove_cols)]
+
+# Shuffling of the train and validation set to ensure proper randomness of the dataset
+
+final_train <- final_train[sample(nrow(final_train)), ]
+```
+
+
+## Feature Selection
+
+For the model to generalize well with unseen data, any features containing NA or no values are excluded.
+
+Other features are kept for the modelling which finally account for 59 different features.
+
+## Methodology
+
+Four different machine learning algorithm have been selected for this project:
+- Linear Discriminant Analysis (LDA) (https://en.wikipedia.org/wiki/Linear_discriminant_analysis)
+- Classification tree (https://en.wikipedia.org/wiki/Classification_Tree_Method)
+- Random Forest (https://en.wikipedia.org/wiki/Random_forest)
+- Globalized Boosted Models (https://en.wikipedia.org/wiki/Gradient_boosting)
+
+These four algorithm are used in classifcation problems.
+
+In order to get a complete picture of the performance of each algorithm, a specific function has been design to run each algorithm with a sampling size as input.
+The cross-validation set is extracted by subseting the training dataset. The size of the cros-validation dataset is 50% the size of the training set.
+
+Each model outputs the accuracy of the model given the size of the cross-validation dataset and the total time it took to output that result.
+The resulting dataframe is then graphed.
+
+Note: As the sampling size increases, so does the execution time. This can take from a few minutes to a few hours.
+For the purpose of this project, gather data and illustrate the algorithm performance, I did run up to 10,000 sample size which took a few hours to run on my computer.
+
+### Function
+
+```{r ModelFunction, eval=FALSE, message=FALSE, include=FALSE}
+# function to compare different ML algorithm with a n sampling number as input
+model_comparison <- function(n) {
+        train_1000 <- final_train[1:n, ]
+        cross_1000 <- final_train[(n + 1):(n + 0.5 * n), ]
+        m <- nrow(cross_1000)
+        
+        # LDA - Linear Discriminant Analysis
+        tic()
+        
+        modelLDA <- train(classe ~ ., method = "lda", data = train_1000)
+        predsLDA <- predict(modelLDA, newdata = cross_1000)
+        crosstabLDA <- table(predsLDA, cross_1000$classe)
+        accuracyLDA <- (sum(diag(crosstabLDA)) * 100) / m
+        testPredictionsLDA <- predict(modelLDA, newdata = final_validation)
+        
+        exectimeLDA <- toc()
+        exectimeLDA <- exectimeLDA$toc - exectimeLDA$tic
+        
+        # Classification tree
+        tic()
+        
+        modelRpart <- train(classe ~ ., method = "rpart", data = train_1000)
+        predsRpart <- predict(modelRpart, newdata = cross_1000)
+        crosstabRpart <- table(predsRpart, cross_1000$classe)
+        accuracyRpart <- (sum(diag(crosstabRpart)) * 100) / m
+        testPredictionsRPart <- predict(modelRpart, newdata = final_validation)
+        
+        exectimeRpart <- toc()
+        exectimeRpart <- exectimeRpart$toc - exectimeRpart$tic
+        
+        # Random Forest
+        tic()
+        
+        modelRF <- train(classe ~ ., method = "rf", data = train_1000)
+        predsRF <- predict(modelRF, newdata = cross_1000)
+        crosstabRF <- table(predsRF, cross_1000$classe)
+        accuracyRF <- (sum(diag(crosstabRF)) * 100) / m
+        testPredictionsRF <- predict(modelRF, newdata = final_validation)
+        
+        exectimeRF <- toc()
+        exectimeRF <- exectimeRF$toc - exectimeRF$tic
+        
+        # GBM - Generalized Boosted Models
+        tic()
+        
+        modelGBM <- train(classe ~ ., method = "gbm", data = train_1000, verbose = FALSE)
+        predsGBM <- predict(modelGBM, newdata = cross_1000)
+        crosstabGBM <- table(predsGBM, cross_1000$classe)
+        accuracyGBM <- (sum(diag(crosstabGBM)) * 100) / m
+        testPredictionsGBM <- predict(modelGBM, newdata = final_validation)
+        
+        exectimeGBM <- toc()
+        exectimeGBM <- exectimeGBM$toc - exectimeGBM$tic
+        
+        print(testPredictionsLDA)
+        print(testPredictionsRPart)
+        print(testPredictionsRF)
+        print(testPredictionsGBM)
+
+        df <- data.frame(SamplingSize = n,
+                         ModelType = c("LDA", "ClassificationTree", "RF", "GBM"),
+                         ModelAccuracy = c(accuracyLDA, accuracyRpart, accuracyRF, accuracyGBM),
+                         ModelTime = c(exectimeLDA, exectimeRpart, exectimeRF, exectimeGBM))
+}
+
+```
+
+### Results
+
+For this project, the model comparison function is run for different sampling sizes ranging from 500 to 10,000.
+
+```{r FunctionRun, echo=TRUE, message=FALSE, warning=FALSE}
+sampling <- list(500, 750, 1000, 2000, 5000, 10000)
+
+# resdf <- map_df(sampling, model_comparison)
+# Result imported after running the simulation for time-saving purpose
+resdf <- read.csv("resdf.csv")
+
+ind <- c("ModelType")
+
+resdf[, ind] <- as.factor(resdf[, ind])
+```
+
+
+## Analysis
+
+```{r Plot1, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+# Palette of color for color-blind with grey
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot(resdf, aes(x = SamplingSize, y = ModelAccuracy, colour = ModelType)) +
+        geom_point(size = 4, alpha = 0.6) +
+        geom_line(lty = 2, alpha = 0.4, lwd = 1.2) +
+        ggtitle("Model Accuracy vs. Sample size") +
+        xlab("Sample Size (n)") +
+        ylab("Model Accuracy (%)") +
+        geom_hline(yintercept = 100, colour = "red", lty = 1.2) +
+        scale_colour_manual(values = cbPalette)
+
+```
+
+The highest accuracy is obtained with generalized boosted method and random forest. We can see that above a sampling size of 2000, adding more data to thr training set is not improving the performance greatly.
+
+It is interesting to note that for Linear Discriminant Analysis, the accuracy remains stable at about 85% no matter the sampling size. On the contrary, it seems that classification tree might be able to achieve better results with mode data.
+
+
+```{r Plot2, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(resdf, aes(x = SamplingSize, y = ModelTime, colour = ModelType)) +
+        geom_point(size = 4, alpha = 0.6) +
+        geom_line(lty = 2, alpha = 0.4, lwd = 1.2) +
+        ggtitle("Execution Time vs. Sample size") +
+        xlab("Sample Size (n)") +
+        ylab("Execution Time (sec)") +
+        scale_colour_manual(values = cbPalette)
+
+```
+
+In terms of execution time, we can see that LDA and classification tree are rapid algorithm. Output are computed in less than a minute. Random Forest algorithm shows an exponential trend for the execution time which relates to the increasing number of tree to be contructed. Some package such as foreach can help to split the dataset and use each core of the computer (http://stackoverflow.com/questions/7830255/suggestions-for-speeding-up-random-forests).
+Finally, the generalized boosted model has acceptable execution time, faster than the random forest algorithm but slower than LDA and classification tree. Optimization techniques of the basic model used in this project can be found here: http://www.saedsayad.com/docs/gbm2.pdf.
+
+```{r Plot3, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(resdf, aes(x = ModelTime, y = ModelAccuracy, colour = as.factor(SamplingSize))) +
+        geom_point(size = 4, alpha = 0.6) +
+        geom_line(lty = 2, alpha = 0.4, lwd = 1.2) +
+        ggtitle("Execution Time vs. Sample size") +
+        xlab("Execution Time (sec)") +
+        ylab("Model Accuracy (%)") +
+        facet_wrap(~ ModelType) +
+        geom_hline(yintercept = 100, colour = "red", lty = 1.2) +
+        scale_colour_manual(values = cbPalette)
+
+```
+
+This last graph shows that high accuracy can be achieve in a relatively short execution time for generalized boosted method and random forest. However, the execution time for randdom forest algorithm can be very large as the training set size increases.
+Classification tree and LDA remains very rapid but with lower accuracy.
+
+## Conclusion
+
+Random Forest and Generalized Boosted Models predictions presents the highest accuracy among the four classification algorithms used in this project for a relatively small sample size. Performance of the LDA increases slowly with the sampling size.
+
+For testing and to see a rapid picture of what machine learning algorithm can do on this classification problem, Linear Discriminant Analysis can provide a good alternative with fast execution time even for larger training dataset and accuracy of about 85%
+
+The choice of Generalized Boosted Models (as used in the gbm package) for this dataset helps to obtain greater acuracy within an acceptable execution time. This algorithm has the highest performance at relatively small sample size while having a rather short execution time.
+
+## Annexes and Session information
+
+```{r, message=FALSE, warning=FALSE}
+sessionInfo()
+```
+
