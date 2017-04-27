@@ -1,0 +1,161 @@
+---
+title: "Phuket Marathon - June 2016"
+author: "Pierre Baudin"
+date: "April 26, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Introduction
+
+As part of an assignment for the Data Science Specialization offered on Coursera by the Johns Hopkins University, I decided to practice the leaflet package on my marathon data from June 2016.
+
+GPS data and race metrics have been recorded using a Garmin Forerunner 220. The data have been downloaded from the Garmin connect website.
+
+## Import and clean
+
+```{r Load Libraries, message=FALSE, warning=FALSE, include=FALSE}
+# Load libraries
+library(leaflet)
+library(ggplot2)
+library(dplyr)
+library(sp)
+library(rgdal)
+library(lubridate)
+library(XML)
+
+# Set the working directory
+setwd("D:/Data Science/R-Data-Science-Study/C9_Building Data Product")
+```
+
+
+```{r}
+# Import the GPS coordinate of the race (format in gpx)
+racetrack <- readOGR("activity_1198615565.gpx", layer = "tracks")
+
+# Import the race split data
+racedf <- read.csv("activity_1198615565.csv")
+
+# Remove last line of summary data
+racedf <- racedf[-nrow(racedf), ]
+
+# To keep things managable, only select the split number,
+# Average pace, average HR and the running cadence
+
+racedf <- racedf %>%
+        select(Split, Avg.Pace, Avg.HR, Avg.Run.Cadence) %>%
+        droplevels()
+
+racedf$Split <- ordered(racedf$Split, levels(as.factor(1:43)))
+# Output a summary of the data
+summary(racedf)
+
+```
+
+```{r}
+# Extracting the GPS information
+
+# Big thanks to R.blogger
+# I found this great article to easily extract the info from the gpx file.
+# There is much more: https://www.r-bloggers.com/stay-on-track-plotting-gps-tracks-with-r/
+
+# Parse the GPX file
+pfile <- htmlTreeParse("activity_1198615565.gpx",
+                        error = function(...) {}, useInternalNodes = T)
+# Get all elevations, times and coordinates via the respective xpath
+elevations <- as.numeric(xpathSApply(pfile, path = "//trkpt/ele", xmlValue))
+
+times <- xpathSApply(pfile, path = "//trkpt/time", xmlValue)
+
+coords <- xpathSApply(pfile, path = "//trkpt", xmlAttrs)
+# Extract latitude and longitude from the coordinates
+lats <- as.numeric(coords["lat",])
+lons <- as.numeric(coords["lon",])
+# Put everything in a dataframe and get rid of old variables
+geodf <- data.frame(lat = lats, lon = lons, ele = elevations, time = times)
+rm(list = c("elevations", "lats", "lons", "pfile", "times", "coords"))
+
+geodf$time <- strptime(geodf$time, format = "%Y-%m-%dT%H:%M:%OS")
+```
+
+## Ploting the course
+
+```{r}
+
+m <- leaflet() %>%
+        addTiles()  # Add default OpenStreetMap map tiles
+
+# start point
+m %>% addPolylines(data = racetrack, color = "red", weight = 4) %>%
+                addMarkers(lng = geodf$lon[1], lat = geodf$lat[1],
+                           popup = "Run Paradise - Starting and Finish line")
+
+```
+
+## Race splits and performance
+
+### Elevation through the race
+```{r, echo=FALSE}
+ggplot(geodf, aes(x = time, y = ele)) +
+        geom_path(lwd = 1.2, col = "darkgrey") +
+        xlab("Time (UTC)") +
+        ylab("Elevation (meters") +
+        ggtitle("Phuket, Thalang marathon - Run In Paradise - June - 2016")
+```
+
+The elevation data extracted from the GPS measurement shows a difficult race with two major climb and few minor hills.
+
+### Race measurement plots
+
+
+```{r, echo=FALSE}
+ggplot(racedf, aes(x = as.numeric(Split), y = (as.numeric(hms(racedf$Avg.Pace)) / 60))) +
+        geom_point(col = "steelblue") +
+        geom_path(col = "steelblue", alpha = 0.5) +
+        labs(x = "Splits (every km)", y = "Average Pace (minutes)") +
+        ggtitle("Phuket Marathon June 2016 - Split vs Avg. Pace")
+```
+
+This first graph shows that the race went well until approximately the 27th kilometers. Interestingly this is a great example of what *hitting the wall* does to race performance.
+
+My body just ran out of fuel and after the 30th kilomter, I was simply walking at a pace of about 10min/km.
+
+To further understand what happened during the race, here is what happened to the average heart rate:
+
+```{r}
+ggplot(racedf, aes(x = as.numeric(Split), y = Avg.HR)) +
+        geom_point(col = "steelblue") +
+        geom_path(col = "steelblue", alpha = 0.5) +
+        geom_hline(yintercept = c(136, 146), col = "red", lty = 2, lwd = 1.2) +
+        labs(x = "Splits (every km)", y = "Avg. HR rate (bpm)") +
+        ggtitle("Phuket Marathon June 2016 - Split vs Average Heart Rate")
+```
+
+The zone in between the two red lines is my aerobic zone where my body burns fat for fuel. Fat is a very economic resources for energy and is the primary source of fuel for the body in endurance sports.
+
+Above this zone, the energy comes from carbohydrates (sugar) which are in limited supply. In addition, a lot of waste are being produced from this mechanism which lead to cramps and fatigue.
+
+From this graph, we can clearly see that as the sugar is getting consumed, the heart rate increases until exhaustion of this source of fuel. At about 30km, the heart rate drops which coincide with the end of the running activity (see above for the average pace).
+
+
+## Conclusion
+
+In this brief analysis of my marathon race last year, we observed a phenomenon called "the Wall". We also learn that sustainable long effort is not achieved at high heart rate.
+
+Despite 8 months training for the event, I was clearly not prepared to face this challenge as my aerobic system was not fully developped to cope with the effort.
+
+On a personal level, I enjoyed this race. Phuket is a beautiful place and the people there are really nice. I now train for my next marathon with much more care about my training. I hope to run smoothly from start to end, and forget that a Wall could exist at all.
+
+If you are interested to develop your aerobic system to burn fat for fuel, check out the Maffetone Method.
+https://philmaffetone.com/method/
+
+### Session info
+
+```{r}
+sessionInfo()
+```
