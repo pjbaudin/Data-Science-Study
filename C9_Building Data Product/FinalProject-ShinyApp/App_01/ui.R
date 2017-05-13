@@ -4,13 +4,13 @@ library(shiny)
 shinyUI(pageWithSidebar(
         
         # Application title
-        headerPanel("Hello Shiny!"),
+        headerPanel("Hello World!"),
         
         # Sidebar with a slider input for number of observations
         sidebarPanel(
                 sliderInput("obs", 
                             "Number of observations:", 
-                            min = 1,
+                            min = 5,
                             max = 1000, 
                             value = 500)
         ),
