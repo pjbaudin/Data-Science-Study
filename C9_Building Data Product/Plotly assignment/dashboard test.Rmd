@@ -1,0 +1,138 @@
+---
+title: "Plotly Practice"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(htmltools)
+
+```
+
+```{r include = FALSE}
+library(ggplot2)
+library(plotly)
+library(quantmod)
+```
+
+# Intro {.sidebar}
+
+This dashboard covers two examples about the plotly package:
+
+* Ggplot2 function
+* Plot_ly Function
+
+Date of publication:
+```{r, echo=FALSE}
+Sys.Date()
+```
+# Ggplot2 Function
+
+## Column 1 {data-width=700}
+
+### Example
+
+```{r echo = FALSE}
+# Create the ggplot2 graph
+dsamp <- diamonds[sample(nrow(diamonds), 1000), ]
+p <- qplot(carat, price, data = dsamp, colour = clarity)
+
+# Make your plot interactive
+p <- ggplotly(p)
+
+# api_create(p, filename = "diamonds_plotly")
+
+```
+
+<iframe src="https://plot.ly/~pjbaudin/23"
+        height="600" width="100%"
+        scrolling="no" seamless="seamless"
+        frameBorder="0">
+</iframe>
+
+## Column 2 {data-width=300}
+
+### Comment
+
+Plotly is an easy to use function to produce interactive graph. An simple way to demonstrate that is to use it in combination to ggplot2.
+
+Using the diamonds dataset, we plot the price as a function of the diamond size (carat) and we use the color to represent the clarity of the diamonds.
+
+# Plot_ly Function
+
+## Column 1 {data-width=400}
+
+### Comment
+
+Going further with plotly:
+
+Plotly also proposes a range of function to improve the interactivity with the graph. In the following R code, we will produce a range slider of the Amazon stock.
+
+We will use the quantmod package to get the price of the amazon stocks and plot the time series.
+
+### Data Import
+
+```{r, echo=TRUE}
+# Download Amazon stock price
+getSymbols("AMZN")
+
+# Convert dataset to a dataframe and add Date column
+AMZN_plotly <- as.data.frame(AMZN) 
+AMZN_plotly$Date <- row.names(AMZN_plotly)
+```
+
+### Quantmod Package plot
+
+```{r, echo=FALSE}
+# Plot using the quantmod functionality
+chartSeries(AMZN, subset = "last 3 months")
+addBBands()
+```
+
+## Column 2 {data-width=600}
+
+### Plot_ly Plot
+```{r, echo=FALSE}
+# Amazon Stock Price With Rangeslider using plotly
+p <- plot_ly(AMZN_plotly, x = ~ Date) %>%
+        add_lines(y = ~ AMZN.Adjusted, name = "Amazon") %>% 
+        rangeslider() %>% 
+        layout(
+                title = "Stock Price Amazon",
+                xaxis = list(title = "Date"),
+                yaxis = list(title = "Price"))
+# api_create(p, filename = "AMZN_plotly")
+# p
+```
+
+<iframe src="https://plot.ly/~pjbaudin/9"
+        height="600" width="100%"
+        scrolling="no" seamless="seamless"
+        frameBorder="0">
+</iframe>
+
+
+# Conclusion
+
+## Column 1 {data-width=300}
+
+### Conclusion
+
+Plotly is a very efficient way to produce interactive visualization of the data.
+
+I enjoyed going through the examples on their website and my eyes was caught with the great possibility of making a full dashboard.
+
+Visit:
+
+https://plot.ly/feed/
+
+
+## Column 2 {data-width=700}
+
+### R session Info
+
+```{r}
+sessionInfo()
+```
