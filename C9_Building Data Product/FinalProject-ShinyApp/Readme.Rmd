@@ -1,0 +1,30 @@
+---
+title: "Readme"
+author: "Pierre Baudin"
+date: "May 14 2017"
+output: html_document
+---
+
+# Building Data Product - Shiny App
+
+## Outlook
+
+This is the final project of the Data Science Specialization offered by the John Hopkins university on Coursera.
+The objective is to build a basic Shiny app with widget and interactive computations and graphic rendering.
+
+The Stock visualization and forecast is a basic app based on the following:
+- *quantmod* package: the application download data from Yahoo finance
+- stock price is adjusted for inflation using the data from the Federal Reserve Bank of St. Louis.
+- Forecast is computed basic arima function from the *forecast* package.
+- Interactive plot of the forecast object uses *ggfortify*.
+
+## Instructions
+- Enter a stock code (example: PFE for Pfizer)
+- Select the time period you are interested in
+- Select whether you want to adjust for inflation
+- Select the forecast period (in number of days)
+- Select the confidence interval
+
+Enjoy the app!
+
+<https://pjbaudin.shinyapps.io/c9_finalproject/>
