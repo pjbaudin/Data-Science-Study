@@ -29,7 +29,7 @@ shinyUI(fluidPage(
                                     value = 50),
                         
                         sliderInput("conf",
-                                    label = "Input the forecast range",
+                                    label = "Input the confidence interval:",
                                     min = 90,
                                     max = 99,
                                     step = 1,

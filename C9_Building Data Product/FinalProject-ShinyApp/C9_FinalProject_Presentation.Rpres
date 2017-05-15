@@ -51,10 +51,16 @@ Shiny App Intructions
 ========================================================
 
 - Enter a stock code (example: PFE for Pfizer)
+```{r, echo = FALSE}
+PFE <- read.csv("PFE.csv")
+head(as.data.frame(PFE), n = 2)
+```
 - Select the time period you are interested in
 - Select whether you want to adjust for inflation
 - Select the forecast period (in number of days)
 - Select the confidence interval
+
+***
 
 Enjoy the app!
 

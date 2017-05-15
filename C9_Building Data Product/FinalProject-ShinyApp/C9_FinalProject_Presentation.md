@@ -51,10 +51,18 @@ Shiny App Intructions
 ========================================================
 
 - Enter a stock code (example: PFE for Pfizer)
+
+```
+  X PFE.Open PFE.High PFE.Low PFE.Close PFE.Volume PFE.Adjusted
+1 1    26.15    26.42   25.98     26.29   40644800     16.94124
+2 2    26.38    26.57   26.29     26.38   32246200     16.99923
+```
 - Select the time period you are interested in
 - Select whether you want to adjust for inflation
 - Select the forecast period (in number of days)
 - Select the confidence interval
+
+***
 
 Enjoy the app!
 
